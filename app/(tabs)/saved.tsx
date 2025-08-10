@@ -1,10 +1,14 @@
+import { icons } from "@/constants/icons";
 import React from "react";
-import { Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 
 const Saved = () => {
   return (
-    <View>
-      <Text>Saved</Text>
+    <View className="flex-1 bg-primary px-10">
+      <View className="flex items-center justify-center flex-1 flex-col gap-5">
+        <Image source={icons.save} className="size-10" tintColor="#Fff" />
+        <Text className="text-gray-500 text-base">Save</Text>
+      </View>
     </View>
   );
 };

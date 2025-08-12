@@ -58,3 +58,61 @@ export const fetchMovieDetails = async (id: string): Promise<MovieDetails> => {
     throw new Error("Failed to fetch movie details.");
   }
 };
+
+export const updateSearchCount = async (
+  query: string,
+  movie: Movie | null
+): Promise<void> => {
+  try {
+    const response = await fetch(
+      "http://192.168.0.46:8080/api/trending-movies",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          searchTerm: query,
+          movieId: movie?.id,
+          title: movie?.title,
+          posterUrl: `https://image.tmdb.org/t/p/w500${movie?.poster_path}`,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to update search count.");
+    }
+  } catch (error) {
+    console.error("Error updating search count:", error);
+    throw error;
+  }
+};
+
+export const getTrendingMovies = async (): Promise<
+  TrendingMovie[] | undefined
+> => {
+  try {
+    const response = await fetch(
+      "http://192.168.0.46:8080/api/trending-movies/top10",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log(response);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch trending movies.");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching trending movies:", error);
+    throw error;
+  }
+};

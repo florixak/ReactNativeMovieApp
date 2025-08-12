@@ -4,8 +4,7 @@ import TrendingCard from "@/components/TrendingCard";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 import useFetch from "@/hooks/useFetch";
-import { fetchPopularMovies } from "@/services/api";
-import { getTrendingMovies } from "@/services/appwrite";
+import { fetchPopularMovies, getTrendingMovies } from "@/services/api";
 import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
@@ -87,7 +86,7 @@ export default function Index() {
                   renderItem={({ item, index }) => (
                     <TrendingCard movie={item} index={index} />
                   )}
-                  keyExtractor={(item) => item.movie_id.toString()}
+                  keyExtractor={(item) => item.movieId.toString()}
                   ItemSeparatorComponent={() => <View className="w-4" />}
                 />
               </View>

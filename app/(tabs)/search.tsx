@@ -3,8 +3,7 @@ import SearchBar from "@/components/SearchBar";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 import useFetch from "@/hooks/useFetch";
-import { fetchPopularMovies } from "@/services/api";
-import { updateSearchCount } from "@/services/appwrite";
+import { fetchPopularMovies, updateSearchCount } from "@/services/api";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
 

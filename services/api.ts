@@ -103,8 +103,6 @@ export const getTrendingMovies = async (): Promise<
       }
     );
 
-    console.log(response);
-
     if (!response.ok) {
       throw new Error("Failed to fetch trending movies.");
     }

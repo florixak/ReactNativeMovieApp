@@ -1,0 +1,25 @@
+###
+POST http://localhost:8080/api/saved-movies
+Content-Type: application/json
+Authorization: Bearer token
+
+{
+  "movieId": 27205,
+  "title": "test title",
+  "posterUrl": "https://placehold.co/600x400/1a1a1a/ffffff.png",
+  "overview": "Test overview",
+  "releaseDate": "2012-02-01",
+  "rating": 8.5
+}
+
+###
+GET http://localhost:8080/api/saved-movies
+Authorization: Bearer token
+
+###
+GET http://localhost:8080/api/saved-movies/27205
+Authorization: Bearer token
+
+###
+DELETE http://localhost:8080/api/saved-movies/27205
+Authorization: Bearer token

@@ -1,7 +1,3 @@
-### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=IntelliJ IDEA
-
 ###
 GET http://localhost:8080/api/trending-movies
 Accept: application/json
@@ -11,10 +7,10 @@ PUT http://localhost:8080/api/trending-movies
 Content-Type: application/json
 
 {
-  "searchTerm": "Incept",
-  "movieId": 27205,
-  "title": "Inception",
-  "posterUrl": "https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg"
+  "searchTerm": "Star Wars",
+  "movieId": 680,
+  "title": "Star Wars: Revenge of the Sith",
+  "posterUrl": "https://placehold.co/400x600/1a1a1a/ffffff.png"
 }
 
 ###
@@ -22,8 +18,12 @@ PUT http://localhost:8080/api/trending-movies
 Content-Type: application/json
 
 {
-"searchTerm": "action",
+"searchTerm": "avengers",
 "movieId": 299536,
 "title": "Avengers: Infinity War",
 "posterUrl": "https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg"
 }
+
+
+
+

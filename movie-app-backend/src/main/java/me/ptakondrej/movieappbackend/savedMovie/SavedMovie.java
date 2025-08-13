@@ -12,6 +12,8 @@ public class SavedMovie {
 	@Id
 	@GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
 	private Long id;
+	@Column(name = "movie_id", unique = true, nullable = false)
+	private Long movieId;
 	private String title;
 	@Column(name = "user_id")
 	private Long userId;
@@ -30,8 +32,8 @@ public class SavedMovie {
 
 	public SavedMovie() {}
 
-	public SavedMovie(Long id, String title, String posterUrl, String overview, String releaseDate, Double rating, LocalDateTime createdAt, LocalDateTime updatedAt) {
-		this.id = id;
+	public SavedMovie(Long movieId, String title, String posterUrl, String overview, String releaseDate, Double rating, LocalDateTime createdAt, LocalDateTime updatedAt) {
+		this.movieId = movieId;
 		this.title = title;
 		this.posterUrl = posterUrl;
 		this.overview = overview;
@@ -47,6 +49,14 @@ public class SavedMovie {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public Long getMovieId() {
+		return movieId;
+	}
+
+	public void setMovieId(Long movieId) {
+		this.movieId = movieId;
 	}
 
 	public String getTitle() {
@@ -95,5 +105,21 @@ public class SavedMovie {
 
 	public void setRating(Double rating) {
 		this.rating = rating;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDateTime getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 }

@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface SavedMovieRepository extends JpaRepository<SavedMovie, Long> {
 	List<SavedMovie> findByUserId(Long userId);
+	List<SavedMovie> findByUserIdAndMovieId(Long userId, Long movieId);
+	void deleteByUserIdAndMovieId(Long userId, Long movieId);
 }

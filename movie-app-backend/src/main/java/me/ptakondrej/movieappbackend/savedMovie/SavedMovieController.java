@@ -3,6 +3,7 @@ package me.ptakondrej.movieappbackend.savedMovie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -16,19 +17,49 @@ public class SavedMovieController {
 	}
 
 	@GetMapping
-	public ResponseEntity<List<SavedMovie>> getSavedMovies(@RequestAttribute("userId") Long userId) {
+	public ResponseEntity<List<SavedMovieDTO>> getSavedMovies(@RequestAttribute("userId") Long userId) {
 		List<SavedMovie> savedMovies = savedMovieService.getSavedMoviesByUserId(userId);
-		return ResponseEntity.ok(savedMovies);
+		List<SavedMovieDTO> savedMoviesDTO = savedMovies.stream()
+				.map(this::convertToDTO)
+				.toList();
+		return ResponseEntity.ok(savedMoviesDTO);
+	}
+
+	@GetMapping("/all")
+	public ResponseEntity<List<SavedMovieDTO>> getAllSavedMovies() {
+		List<SavedMovie> savedMovies = savedMovieService.getAllSavedMovies();
+		List<SavedMovieDTO> savedMoviesDTO = savedMovies.stream()
+				.map(this::convertToDTO)
+				.toList();
+		return ResponseEntity.ok(savedMoviesDTO);
+	}
+
+	@GetMapping("/{movieId}")
+	public ResponseEntity<SavedMovieDTO> getSavedMovieById(
+			@RequestAttribute("userId") Long userId,
+			@PathVariable Long movieId
+	) {
+		List<SavedMovie> savedMovies = savedMovieService.getSavedMoviesByUserId(userId);
+		SavedMovie savedMovie = savedMovies.stream()
+				.filter(movie -> movie.getMovieId().equals(movieId))
+				.findFirst()
+				.orElseThrow(() -> new RuntimeException("Saved movie not found with ID: " + movieId));
+		SavedMovieDTO savedMovieDTO = convertToDTO(savedMovie);
+		return ResponseEntity.ok(savedMovieDTO);
 	}
 
 	@PostMapping
 	public ResponseEntity<String> saveMovie(
 			@RequestAttribute("userId") Long userId,
-			@RequestBody SavedMovie savedMovie
+			@RequestBody SavedMovieDTO savedMovieDTO
 	) {
-		savedMovie.setUserId(userId);
-		SavedMovie saved = savedMovieService.saveMovie(savedMovie);
-		return ResponseEntity.ok("Saved movie with ID: " + saved.getId() + " for user with ID: " + userId);
+		try {
+			SavedMovie savedMovie = convertToEntity(savedMovieDTO, userId);
+			savedMovieService.saveMovie(savedMovie);
+			return ResponseEntity.ok("Saved movie with ID: " + savedMovie.getMovieId() + " for user with ID: " + userId);
+		} catch (RuntimeException e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
 	}
 
 	@DeleteMapping("/{movieId}")
@@ -36,6 +67,36 @@ public class SavedMovieController {
 			@RequestAttribute("userId") Long userId,
 			@PathVariable Long movieId
 	) {
-		return ResponseEntity.ok("Deleted saved movie with ID: " + movieId + " for user with ID: " + userId);
+		try {
+			savedMovieService.deleteSavedMovie(userId, movieId);
+			return ResponseEntity.ok("Deleted saved movie with ID: " + movieId + " for user with ID: " + userId);
+		} catch (RuntimeException e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
+
+	private SavedMovieDTO convertToDTO(SavedMovie savedMovie) {
+		return new SavedMovieDTO(
+				savedMovie.getMovieId(),
+				savedMovie.getTitle(),
+				savedMovie.getPosterUrl(),
+				savedMovie.getOverview(),
+				savedMovie.getReleaseDate(),
+				savedMovie.getRating()
+		);
+	}
+
+	private SavedMovie convertToEntity(SavedMovieDTO savedMovieDTO, Long userId) {
+		SavedMovie savedMovie = new SavedMovie();
+		savedMovie.setMovieId(savedMovieDTO.getMovieId());
+		savedMovie.setTitle(savedMovieDTO.getTitle());
+		savedMovie.setPosterUrl(savedMovieDTO.getPosterUrl());
+		savedMovie.setOverview(savedMovieDTO.getOverview());
+		savedMovie.setReleaseDate(savedMovieDTO.getReleaseDate());
+		savedMovie.setRating(savedMovieDTO.getRating());
+		savedMovie.setUserId(userId);
+		savedMovie.setCreatedAt(LocalDateTime.now());
+		savedMovie.setUpdatedAt(LocalDateTime.now());
+		return savedMovie;
 	}
 }

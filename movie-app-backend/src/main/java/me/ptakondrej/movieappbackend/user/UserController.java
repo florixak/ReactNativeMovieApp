@@ -1,10 +1,19 @@
 package me.ptakondrej.movieappbackend.user;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
+
+	private final UserService userService;
+
+	public UserController(UserService userService) {
+		this.userService = userService;
+	}
 
 	@GetMapping("/{userId}")
 	public String getUserById(
@@ -13,25 +22,17 @@ public class UserController {
 		return "User data for user with ID: " + userId;
 	}
 
-	@GetMapping
-	public String getUsers(
-	) {
-		return "List of users";
-	}
-
-	@PostMapping
-	public String createUser(
-			@RequestBody User user
-	) {
-		return "User created";
-	}
-
 	@PutMapping
 	public String updateUser(
 			@RequestAttribute ("userId") Long userId,
 			@RequestBody User user
 	) {
 		return "User updated";
+	}
+
+	@GetMapping
+	public ResponseEntity<List<User>> getAllUsers() {
+		return ResponseEntity.ok(userService.getAllUsers());
 	}
 
 

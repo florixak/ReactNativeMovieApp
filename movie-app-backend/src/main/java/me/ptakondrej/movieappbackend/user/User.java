@@ -2,22 +2,34 @@ package me.ptakondrej.movieappbackend.user;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	@Column(unique = true, nullable = false)
 	private String username;
+	@Column(unique = true, nullable = false)
 	private String email;
+	@Column(nullable = false)
 	private String password;
 	@CreationTimestamp
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
+	@Column(name = "verification_code")
+	private String verificationCode;
+	@Column(name = "verification_expiration")
+	private LocalDateTime verificationCodeExpiresAt;
+	private boolean enabled;
 
 	public User() {}
 
@@ -41,6 +53,54 @@ public class User {
 		return username;
 	}
 
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public String getVerificationCode() {
+		return verificationCode;
+	}
+
+	public void setVerificationCode(String verificationCode) {
+		this.verificationCode = verificationCode;
+	}
+
+	public LocalDateTime getVerificationCodeExpiresAt() {
+		return verificationCodeExpiresAt;
+	}
+
+	public void setVerificationCodeExpiresAt(LocalDateTime verificationCodeExpiresAt) {
+		this.verificationCodeExpiresAt = verificationCodeExpiresAt;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	@Override
+	public boolean isAccountNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isAccountNonLocked() {
+		return true;
+	}
+
+	@Override
+	public boolean isCredentialsNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return enabled;
+	}
+
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -51,6 +111,11 @@ public class User {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		return List.of();
 	}
 
 	public String getPassword() {

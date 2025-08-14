@@ -1,5 +1,9 @@
-import { LoginData, RegisterData } from "@/schemas/authSchemas";
-import { loginUser, registerUser } from "@/services/api";
+import {
+  LoginData,
+  RegisterData,
+  VerificationData,
+} from "@/schemas/authSchemas";
+import { loginUser, registerUser, verifyUser } from "@/services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createContext,
@@ -17,6 +21,7 @@ export interface AuthContextType {
   login: (loginData: LoginData) => Promise<void>;
   register: (registerData: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
+  verify: (verificationData: VerificationData) => Promise<void>;
   refresh: () => Promise<void>;
 }
 
@@ -24,6 +29,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const TOKEN_KEY = "auth_token";
 const USER_KEY = "auth_user";
+const EXPIRES_IN_KEY = "auth_expires_in";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -48,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(JSON.parse(storedUser));
       }
     } catch (e) {
-      console.error("Failed to load stored auth:", e);
+      console.error("Failed to load stored authentication:", e);
       await clearStoredAuth();
     } finally {
       setIsLoading(false);
@@ -82,26 +88,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const login = async (loginData: LoginData) => {
+  const login = async (loginData: LoginData): Promise<void> => {
     try {
       setIsLoading(true);
       const data = await loginUser(loginData);
-      if (data && data.success && data.user && data.token) {
+
+      if (!data.success) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      if (data && data.user && data.token) {
         await storeAuth(data.user, data.token);
       }
-    } catch (error) {
-      console.error("Login error:", error);
+    } catch (error: any) {
+      throw new Error(error.message || "Login failed");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (registerData: RegisterData) => {
+  const register = async (registerData: RegisterData): Promise<void> => {
     try {
       setIsLoading(true);
-      await registerUser(registerData);
-    } catch (error) {
-      console.error("Registration error:", error);
+      const data = await registerUser({
+        username: registerData.username,
+        email: registerData.email,
+        password: registerData.password,
+      });
+      if (!data.success) {
+        throw new Error(data.message || "Registration failed");
+      }
+    } catch (error: any) {
+      throw new Error(error.message || "Registration failed");
     } finally {
       setIsLoading(false);
     }
@@ -120,6 +138,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const verify = async (verificationData: VerificationData): Promise<void> => {
+    try {
+      setIsLoading(true);
+      const data = await verifyUser(verificationData);
+
+      if (!data.success) {
+        console.error("Verification failed:", data.message);
+        throw new Error(data.message || "Verification failed");
+      }
+    } catch (error: any) {
+      throw new Error(error.message || "Verification failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const refresh = async () => {};
 
   const value = {
@@ -130,6 +164,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     login,
     register,
     logout,
+    verify,
     refresh,
   };
 

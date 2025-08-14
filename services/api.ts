@@ -1,3 +1,5 @@
+import { LoginData, RegisterData } from "@/schemas/authSchemas";
+
 const TMDB_CONFIG = {
   BASE_URL: "https://api.themoviedb.org/3",
   API_KEY: process.env.EXPO_PUBLIC_MOVIE_KEY,
@@ -7,7 +9,7 @@ const TMDB_CONFIG = {
   },
 };
 
-/*const url = 'https://api.themoviedb.org/3/authentication';*/
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export const fetchPopularMovies = async ({
   query,
@@ -64,21 +66,18 @@ export const updateSearchCount = async (
   movie: Movie | null
 ): Promise<void> => {
   try {
-    const response = await fetch(
-      "http://192.168.0.46:8080/api/trending-movies",
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          searchTerm: query,
-          movieId: movie?.id,
-          title: movie?.title,
-          posterUrl: `https://image.tmdb.org/t/p/w500${movie?.poster_path}`,
-        }),
-      }
-    );
+    const response = await fetch(`${BACKEND_URL}/trending-movies`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        searchTerm: query,
+        movieId: movie?.id,
+        title: movie?.title,
+        posterUrl: `https://image.tmdb.org/t/p/w500${movie?.poster_path}`,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error("Failed to update search count.");
@@ -93,15 +92,12 @@ export const getTrendingMovies = async (): Promise<
   TrendingMovie[] | undefined
 > => {
   try {
-    const response = await fetch(
-      "http://192.168.0.46:8080/api/trending-movies/top10",
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`${BACKEND_URL}/trending-movies/top10`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
       throw new Error("Failed to fetch trending movies.");
@@ -111,6 +107,83 @@ export const getTrendingMovies = async (): Promise<
     return data;
   } catch (error) {
     console.error("Error fetching trending movies:", error);
+    throw error;
+  }
+};
+
+export const loginUser = async (
+  loginData: LoginData
+): Promise<LoginResponse> => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        usernameOrEmail: loginData.usernameOrEmail,
+        password: loginData.password,
+      }),
+    });
+
+    console.log("Login response:", response);
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    const data: LoginResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error logging in:", error);
+    throw error;
+  }
+};
+
+export const registerUser = async (
+  userData: RegisterData
+): Promise<RegisterData> => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to register.");
+    }
+
+    const data: RegisterData = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error registering:", error);
+    throw error;
+  }
+};
+
+export const verifyUser = async (
+  verificationCode: string
+): Promise<VerificationCodeResponse> => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/auth/verify`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ verificationCode }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to verify.");
+    }
+
+    const data: VerificationCodeResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error verifying:", error);
     throw error;
   }
 };

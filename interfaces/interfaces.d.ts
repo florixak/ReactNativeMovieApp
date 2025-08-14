@@ -75,3 +75,28 @@ interface TrendingCardProps {
   movie: TrendingMovie;
   index: number;
 }
+
+interface User {
+  id: string;
+  email: string;
+  username: string;
+}
+
+interface VerificationCodeResponse {
+  success: boolean;
+  message: string;
+}
+
+interface LoginResponse {
+  success: boolean;
+  user?: User;
+  token?: string;
+  expiresIn: number;
+  message: string;
+}
+
+interface RegisterResponse {
+  success: boolean;
+  user?: User;
+  message: string;
+}

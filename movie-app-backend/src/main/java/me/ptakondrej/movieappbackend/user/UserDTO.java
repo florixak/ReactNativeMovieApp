@@ -5,13 +5,15 @@ public class UserDTO {
 	private Long id;
 	private String username;
 	private String email;
+	private boolean verified;
 
 	public UserDTO() {}
 
-	public UserDTO(Long id, String username, String email) {
+	public UserDTO(Long id, String username, String email, boolean verified) {
 		this.id = id;
 		this.username = username;
 		this.email = email;
+		this.verified = verified;
 	}
 
 	public Long getId() {
@@ -36,5 +38,13 @@ public class UserDTO {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public boolean isVerified() {
+		return verified;
+	}
+
+	public void setVerified(boolean verified) {
+		this.verified = verified;
 	}
 }

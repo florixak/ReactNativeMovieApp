@@ -1,4 +1,8 @@
-import { LoginData, RegisterData } from "@/schemas/authSchemas";
+import {
+  LoginData,
+  RegisterData,
+  VerificationData,
+} from "@/schemas/authSchemas";
 
 const TMDB_CONFIG = {
   BASE_URL: "https://api.themoviedb.org/3",
@@ -126,13 +130,25 @@ export const loginUser = async (
       }),
     });
 
-    console.log("Login response:", response);
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
+    let data: LoginResponse;
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error(
+        `Server error: ${response.status} ${response.statusText}`
+      );
     }
 
-    const data: LoginResponse = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        data.message || `HTTP ${response.status}: ${response.statusText}`
+      );
+    }
+
+    if (!data.success) {
+      throw new Error(data.message || "Login failed");
+    }
+
     return data;
   } catch (error) {
     console.error("Error logging in:", error);
@@ -141,22 +157,26 @@ export const loginUser = async (
 };
 
 export const registerUser = async (
-  userData: RegisterData
-): Promise<RegisterData> => {
+  userData: Omit<RegisterData, "confirmPassword">
+): Promise<RegisterResponse> => {
   try {
-    const response = await fetch(`${BACKEND_URL}/auth/register`, {
+    const response = await fetch(`${BACKEND_URL}/auth/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(userData),
+      body: JSON.stringify({
+        username: userData.username,
+        email: userData.email,
+        password: userData.password,
+      }),
     });
 
     if (!response.ok) {
       throw new Error("Failed to register.");
     }
 
-    const data: RegisterData = await response.json();
+    const data: RegisterResponse = await response.json();
     return data;
   } catch (error) {
     console.error("Error registering:", error);
@@ -165,7 +185,7 @@ export const registerUser = async (
 };
 
 export const verifyUser = async (
-  verificationCode: string
+  verificationData: VerificationData
 ): Promise<VerificationCodeResponse> => {
   try {
     const response = await fetch(`${BACKEND_URL}/auth/verify`, {
@@ -173,7 +193,7 @@ export const verifyUser = async (
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ verificationCode }),
+      body: JSON.stringify(verificationData),
     });
 
     if (!response.ok) {

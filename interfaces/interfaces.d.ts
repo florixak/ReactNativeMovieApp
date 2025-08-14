@@ -91,12 +91,15 @@ interface LoginResponse {
   success: boolean;
   user?: User;
   token?: string;
-  expiresIn: number;
+  expiresIn?: number;
   message: string;
 }
 
 interface RegisterResponse {
   success: boolean;
-  user?: User;
+  user?: {
+    email: User["email"];
+    verificationCode: string;
+  };
   message: string;
 }

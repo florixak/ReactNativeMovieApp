@@ -1,8 +1,12 @@
 package me.ptakondrej.movieappbackend.auth;
 
+import me.ptakondrej.movieappbackend.responses.LoginResponse;
+import me.ptakondrej.movieappbackend.responses.RegisterResponse;
+import me.ptakondrej.movieappbackend.responses.Response;
 import me.ptakondrej.movieappbackend.service.AuthService;
 import me.ptakondrej.movieappbackend.service.JwtService;
 import me.ptakondrej.movieappbackend.user.User;
+import me.ptakondrej.movieappbackend.user.UserDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,41 +28,66 @@ public class AuthController {
 	}
 
 	@PostMapping("/signup")
-	public ResponseEntity<User> signUp(@RequestBody RegisterUserDTO registerUserDTO) {
-		User user = authService.signUp(registerUserDTO);
-		return ResponseEntity.ok(user);
+	public ResponseEntity<RegisterResponse> signUp(@RequestBody RegisterUserDTO registerUserDTO) {
+		try {
+			User user = authService.signUp(registerUserDTO);
+			UserDTO userDTO = new UserDTO(
+					user.getId(),
+					user.getUsername(),
+					user.getEmail(),
+					false
+			);
+			RegisterResponse registerResponse = new RegisterResponse(
+					true,
+					userDTO,
+					"Registration successful. Please verify your email."
+			);
+			return ResponseEntity.ok(registerResponse);
+		} catch (RuntimeException e) {
+			return ResponseEntity.badRequest().body(new RegisterResponse(false, null, e.getMessage()));
+		}
 	}
 
 	@PostMapping("/login")
 	public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDTO loginUserDTO) {
-		User authenticatedUser = authService.authenticate(loginUserDTO);
-		HashMap<String, Object> userDetails = new HashMap<>();
-		userDetails.put("userId", authenticatedUser.getId());
-		userDetails.put("username", authenticatedUser.getUsername());
-		userDetails.put("email", authenticatedUser.getEmail());
-		userDetails.put("enabled", authenticatedUser.isEnabled());
-		String token = jwtService.generateToken(userDetails, authenticatedUser);
-		LoginResponse loginResponse = new LoginResponse(token, jwtService.getExpirationTime());
-		return ResponseEntity.ok(loginResponse);
+		try {
+			User authenticatedUser = authService.authenticate(loginUserDTO);
+			HashMap<String, Object> userDetails = new HashMap<>();
+			userDetails.put("userId", authenticatedUser.getId());
+			userDetails.put("username", authenticatedUser.getUsername());
+			userDetails.put("email", authenticatedUser.getEmail());
+			userDetails.put("enabled", authenticatedUser.isEnabled());
+			String token = jwtService.generateToken(userDetails, authenticatedUser);
+			UserDTO userDTO = new UserDTO(
+					authenticatedUser.getId(),
+					authenticatedUser.getUsername(),
+					authenticatedUser.getEmail(),
+					authenticatedUser.isEnabled()
+			);
+			LoginResponse loginResponse = new LoginResponse(true, userDTO, token, jwtService.getExpirationTime(), "Login successful");
+			return ResponseEntity.ok(loginResponse);
+		} catch (RuntimeException e) {
+			return ResponseEntity.badRequest().body(new LoginResponse(false,null, null, -1, e.getMessage()));
+		}
 	}
 
 	@PostMapping("/verify")
-	public ResponseEntity<?> verifyUser(@RequestBody VerifyUserDTO verifyUserDTO) {
+	public ResponseEntity<Response> verifyUser(@RequestBody VerifyUserDTO verifyUserDTO) {
 		try {
 			authService.verifyUser(verifyUserDTO);
-			return ResponseEntity.ok("Account verified successfully.");
+			return ResponseEntity.ok(new Response(true, "User verified successfully."));
 		} catch (RuntimeException e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
+			return ResponseEntity.badRequest().body(new Response(false, e.getMessage()));
 		}
 	}
 
 	@PostMapping("/resend")
-	public ResponseEntity<?> resendVerificationEmail(@RequestBody String email) {
+	public ResponseEntity<Response> resendVerificationEmail(@RequestBody String email) {
 		try {
 			authService.resendVerificationEmail(email);
-			return ResponseEntity.ok("Verification email resent successfully.");
+			return ResponseEntity.ok(new Response(true, "Verification email resent successfully."));
 		} catch (RuntimeException e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
+			return ResponseEntity.badRequest().body(new Response(false, e.getMessage()));
 		}
 	}
 }

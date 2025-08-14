@@ -1,5 +1,6 @@
 package me.ptakondrej.movieappbackend.savedMovie;
 
+import me.ptakondrej.movieappbackend.responses.SavedMovieResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,29 +50,29 @@ public class SavedMovieController {
 	}
 
 	@PostMapping
-	public ResponseEntity<String> saveMovie(
+	public ResponseEntity<SavedMovieResponse> saveMovie(
 			@RequestAttribute("userId") Long userId,
 			@RequestBody SavedMovieDTO savedMovieDTO
 	) {
 		try {
 			SavedMovie savedMovie = convertToEntity(savedMovieDTO, userId);
 			savedMovieService.saveMovie(savedMovie);
-			return ResponseEntity.ok("Saved movie with ID: " + savedMovie.getMovieId() + " for user with ID: " + userId);
+			return ResponseEntity.ok(new SavedMovieResponse(true, savedMovieDTO, "Saved movie successfully."));
 		} catch (RuntimeException e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
+			return ResponseEntity.badRequest().body(new SavedMovieResponse(false, savedMovieDTO, e.getMessage()));
 		}
 	}
 
 	@DeleteMapping("/{movieId}")
-	public ResponseEntity<String> deleteSavedMovie(
+	public ResponseEntity<SavedMovieResponse> deleteSavedMovie(
 			@RequestAttribute("userId") Long userId,
 			@PathVariable Long movieId
 	) {
 		try {
 			savedMovieService.deleteSavedMovie(userId, movieId);
-			return ResponseEntity.ok("Deleted saved movie with ID: " + movieId + " for user with ID: " + userId);
+			return ResponseEntity.ok(new SavedMovieResponse(true, null, "Deleted saved movie successfully."));
 		} catch (RuntimeException e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
+			return ResponseEntity.badRequest().body(new SavedMovieResponse(false, null, e.getMessage()));
 		}
 	}
 

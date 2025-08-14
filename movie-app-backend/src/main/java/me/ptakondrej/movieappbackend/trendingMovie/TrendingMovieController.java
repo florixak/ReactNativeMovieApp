@@ -1,5 +1,6 @@
 package me.ptakondrej.movieappbackend.trendingMovie;
 
+import me.ptakondrej.movieappbackend.responses.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,17 +27,23 @@ public class TrendingMovieController {
 	}
 
 	@PutMapping
-	public ResponseEntity<String> updateTrendingMovie(
+	public ResponseEntity<Response> updateTrendingMovie(
 			@RequestBody TrendingMovieRequest trendingMovieRequest
 	) {
-		TrendingMovie trendingMovie = new TrendingMovie();
-		trendingMovie.setMovieId(trendingMovieRequest.getMovieId());
-		trendingMovie.setTitle(trendingMovieRequest.getTitle());
-		trendingMovie.setPosterUrl(trendingMovieRequest.getPosterUrl());
-		trendingMovie.setSearchTerm(trendingMovieRequest.getSearchTerm());
+		try {
+			TrendingMovie trendingMovie = new TrendingMovie();
+			trendingMovie.setMovieId(trendingMovieRequest.getMovieId());
+			trendingMovie.setTitle(trendingMovieRequest.getTitle());
+			trendingMovie.setPosterUrl(trendingMovieRequest.getPosterUrl());
+			trendingMovie.setSearchTerm(trendingMovieRequest.getSearchTerm());
 
-		trendingMovieService.updateTrendingMovies(trendingMovie);
-		return ResponseEntity.ok("Trending movies updated successfully");
+			trendingMovieService.updateTrendingMovies(trendingMovie);
+			return ResponseEntity.ok(new Response(true, "Trending movie updated successfully."));
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(
+					new Response(false, "Failed to update trending movie: " + e.getMessage())
+			);
+		}
 	}
 
 	@GetMapping("/top10")

@@ -2,13 +2,13 @@ import { icons } from "@/constants/icons";
 import { useAuth } from "@/contexts/AuthContext";
 import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
-import LoginScreen from "../(auth)/login";
+import AuthScreen from "../../components/AuthScreen";
 
 const Profile = () => {
   const { user, logout } = useAuth();
 
   if (!user) {
-    return <LoginScreen />;
+    return <AuthScreen />;
   }
 
   return (

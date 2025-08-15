@@ -10,19 +10,21 @@ import java.time.LocalDateTime;
 @Table(name = "saved_movies")
 public class SavedMovie {
 	@Id
-	@GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	@Column(name = "movie_id", unique = true, nullable = false)
 	private Long movieId;
 	private String title;
 	@Column(name = "user_id")
 	private Long userId;
-	@Column(name = "poster_url")
-	private String posterUrl;
-	private String overview;
+	@Column(name = "poster_path")
+	private String posterPath;
 	@Column(name = "release_date")
 	private String releaseDate;
-	private Double rating;
+	@Column(name = "vote_average")
+	private Double voteAverage;
+	@Column(name = "original_language")
+	private String originalLanguage;
 	@CreationTimestamp
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
@@ -32,13 +34,14 @@ public class SavedMovie {
 
 	public SavedMovie() {}
 
-	public SavedMovie(Long movieId, String title, String posterUrl, String overview, String releaseDate, Double rating, LocalDateTime createdAt, LocalDateTime updatedAt) {
+	public SavedMovie(Long movieId, Long userId, String title, String posterPath, String releaseDate, Double voteAverage, String originalLanguage, LocalDateTime createdAt, LocalDateTime updatedAt) {
 		this.movieId = movieId;
+		this.userId = userId;
 		this.title = title;
-		this.posterUrl = posterUrl;
-		this.overview = overview;
+		this.posterPath = posterPath;
 		this.releaseDate = releaseDate;
-		this.rating = rating;
+		this.voteAverage = voteAverage;
+		this.originalLanguage = originalLanguage;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
 	}
@@ -75,20 +78,12 @@ public class SavedMovie {
 		this.userId = userId;
 	}
 
-	public String getPosterUrl() {
-		return posterUrl;
+	public String getPosterPath() {
+		return posterPath;
 	}
 
-	public void setPosterUrl(String posterUrl) {
-		this.posterUrl = posterUrl;
-	}
-
-	public String getOverview() {
-		return overview;
-	}
-
-	public void setOverview(String overview) {
-		this.overview = overview;
+	public void setPosterPath(String posterPath) {
+		this.posterPath = posterPath;
 	}
 
 	public String getReleaseDate() {
@@ -97,14 +92,6 @@ public class SavedMovie {
 
 	public void setReleaseDate(String releaseDate) {
 		this.releaseDate = releaseDate;
-	}
-
-	public Double getRating() {
-		return rating;
-	}
-
-	public void setRating(Double rating) {
-		this.rating = rating;
 	}
 
 	public LocalDateTime getCreatedAt() {
@@ -121,5 +108,21 @@ public class SavedMovie {
 
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	public Double getVoteAverage() {
+		return voteAverage;
+	}
+
+	public void setVoteAverage(Double voteAverage) {
+		this.voteAverage = voteAverage;
+	}
+
+	public String getOriginalLanguage() {
+		return originalLanguage;
+	}
+
+	public void setOriginalLanguage(String originalLanguage) {
+		this.originalLanguage = originalLanguage;
 	}
 }

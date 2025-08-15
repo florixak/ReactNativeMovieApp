@@ -3,13 +3,14 @@ import SearchBar from "@/components/SearchBar";
 import TrendingCard from "@/components/TrendingCard";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
-import useFetch from "@/hooks/useFetch";
 import { fetchPopularMovies, getTrendingMovies } from "@/services/api";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
   FlatList,
   Image,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -21,17 +22,23 @@ export default function Index() {
 
   const {
     data: trendingMovies,
-    loading: trendingMoviesLoading,
+    isLoading: trendingMoviesLoading,
     error: trendingMoviesError,
     refetch: refetchTrendingMovies,
-  } = useFetch(getTrendingMovies);
+  } = useQuery({
+    queryKey: ["trendingMovies"],
+    queryFn: getTrendingMovies,
+  });
 
   const {
     data: movies,
-    loading: moviesLoading,
+    isLoading: moviesLoading,
     error: moviesError,
     refetch: refetchMovies,
-  } = useFetch(() => fetchPopularMovies({ query: "" }));
+  } = useQuery({
+    queryKey: ["popularMovies"],
+    queryFn: () => fetchPopularMovies({ query: "" }),
+  });
 
   return (
     <View className="flex-1 bg-primary">
@@ -41,6 +48,15 @@ export default function Index() {
         className="flex-1 px-5"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ minHeight: "100%", paddingBottom: 10 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={moviesLoading || trendingMoviesLoading}
+            onRefresh={() => {
+              refetchMovies();
+              refetchTrendingMovies();
+            }}
+          />
+        }
       >
         <Image source={icons.logo} className="w-12 h-10 mt-20 mb-5 mx-auto" />
         {moviesLoading || trendingMoviesLoading ? (
@@ -88,6 +104,12 @@ export default function Index() {
                   )}
                   keyExtractor={(item) => item.movieId.toString()}
                   ItemSeparatorComponent={() => <View className="w-4" />}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={trendingMoviesLoading}
+                      onRefresh={refetchTrendingMovies}
+                    />
+                  }
                 />
               </View>
             )}
@@ -98,7 +120,7 @@ export default function Index() {
               </Text>
               <FlatList
                 data={movies}
-                renderItem={({ item }) => <MovieCard {...item} />}
+                renderItem={({ item }) => <MovieCard movie={item} />}
                 keyExtractor={(item) => item.id.toString()}
                 numColumns={3}
                 columnWrapperStyle={{

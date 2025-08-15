@@ -207,3 +207,122 @@ export const verifyUser = async (
     throw error;
   }
 };
+
+export const fetchSavedMovies = async (
+  token: string | null
+): Promise<SavedMovie[]> => {
+  try {
+    if (!token) {
+      throw new Error("No authentication token provided.");
+    }
+    const response = await fetch(`${BACKEND_URL}/saved-movies`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    let data: SavedMovie[];
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error(
+        `Server error: ${response.status} ${response.statusText}`
+      );
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching saved movies:", error);
+    throw error;
+  }
+};
+
+export const saveMovie = async (
+  movie: SavedMovie,
+  token: string | null
+): Promise<void> => {
+  try {
+    if (!token) {
+      throw new Error("No authentication token provided.");
+    }
+
+    const response = await fetch(`${BACKEND_URL}/saved-movies`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        id: movie.id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        release_date: movie.release_date,
+        vote_average: movie.vote_average,
+        original_language: movie.original_language,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to save movie.");
+    }
+  } catch (error) {
+    console.error("Error saving movie:", error);
+    throw error;
+  }
+};
+
+export const unsaveMovie = async (
+  id: string,
+  token: string | null
+): Promise<void> => {
+  try {
+    if (!token) {
+      throw new Error("No authentication token provided.");
+    }
+
+    const response = await fetch(`${BACKEND_URL}/saved-movies/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to unsave movie.");
+    }
+  } catch (error) {
+    console.error("Error unsaving movie:", error);
+    throw error;
+  }
+};
+
+export const fetchSavedMovieById = async (
+  id: string,
+  token: string | null
+): Promise<SavedMovieResponse> => {
+  try {
+    if (!token) {
+      throw new Error("No authentication token provided.");
+    }
+
+    const response = await fetch(`${BACKEND_URL}/saved-movies/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch saved movie.");
+    }
+
+    const data: SavedMovieResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching saved movie:", error);
+    throw error;
+  }
+};

@@ -71,6 +71,16 @@ interface MovieDetails {
   vote_count: number;
 }
 
+interface SavedMovie {
+  id: number;
+  title: string;
+  poster_path: string;
+  overview: string;
+  release_date: string;
+  vote_average: number;
+  original_language: string;
+}
+
 interface TrendingCardProps {
   movie: TrendingMovie;
   index: number;
@@ -101,5 +111,11 @@ interface RegisterResponse {
     email: User["email"];
     verificationCode: string;
   };
+  message: string;
+}
+
+interface SavedMovieResponse {
+  success: boolean;
+  savedMovie?: SavedMovie;
   message: string;
 }

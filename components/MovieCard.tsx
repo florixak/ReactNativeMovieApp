@@ -1,16 +1,23 @@
 import { icons } from "@/constants/icons";
+
 import { Link } from "expo-router";
 import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
-const MovieCard = ({
-  id,
-  title,
-  poster_path,
-  vote_average,
-  release_date,
-  original_language,
-}: Movie) => {
+interface MovieCardProps {
+  movie: Movie | SavedMovie;
+}
+
+const MovieCard = ({ movie }: MovieCardProps) => {
+  const {
+    id,
+    title,
+    poster_path,
+    vote_average,
+    release_date,
+    original_language,
+  } = movie;
+
   return (
     <Link href={`/movies/${id}`} asChild>
       <TouchableOpacity className="w-[30%]">

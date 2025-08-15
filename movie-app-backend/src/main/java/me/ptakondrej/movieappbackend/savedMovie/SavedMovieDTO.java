@@ -1,22 +1,29 @@
 package me.ptakondrej.movieappbackend.savedMovie;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class SavedMovieDTO {
+	@JsonProperty("id")
 	private Long movieId;
 	private String title;
-	private String posterUrl;
-	private String overview;
+	@JsonProperty("poster_path")
+	private String posterPath;
+	@JsonProperty("release_date")
 	private String releaseDate;
-	private Double rating;
+	@JsonProperty("vote_average")
+	private Double voteAverage;
+	@JsonProperty("original_language")
+	private String originalLanguage;
 
 	public SavedMovieDTO() {}
 
-	public SavedMovieDTO(Long movieId, String title, String posterUrl, String overview, String releaseDate, Double rating) {
+	public SavedMovieDTO(Long movieId, String title, String posterPath, String releaseDate, Double voteAverage, String originalLanguage) {
 		this.movieId = movieId;
 		this.title = title;
-		this.posterUrl = posterUrl;
-		this.overview = overview;
+		this.posterPath = posterPath;
 		this.releaseDate = releaseDate;
-		this.rating = rating;
+		this.voteAverage = voteAverage;
+		this.originalLanguage = originalLanguage;
 	}
 
 	public Long getMovieId() {
@@ -35,35 +42,35 @@ public class SavedMovieDTO {
 		this.title = title;
 	}
 
-	public String getPosterUrl() {
-		return posterUrl;
+	public String getPosterPath() {
+		return posterPath;
 	}
 
-	public void setPosterUrl(String posterUrl) {
-		this.posterUrl = posterUrl;
-	}
-
-	public String getOverview() {
-		return overview;
-	}
-
-	public void setOverview(String overview) {
-		this.overview = overview;
+	public void setPosterPath(String poster_path) {
+		this.posterPath = poster_path;
 	}
 
 	public String getReleaseDate() {
 		return releaseDate;
 	}
 
-	public void setReleaseDate(String releaseDate) {
-		this.releaseDate = releaseDate;
+	public void setReleaseDate(String release_date) {
+		this.releaseDate = release_date;
 	}
 
-	public Double getRating() {
-		return rating;
+	public Double getVoteAverage() {
+		return voteAverage;
 	}
 
-	public void setRating(Double rating) {
-		this.rating = rating;
+	public void setVoteAverage(Double voteAverage) {
+		this.voteAverage = voteAverage;
+	}
+
+	public String getOriginalLanguage() {
+		return originalLanguage;
+	}
+
+	public void setOriginalLanguage(String originalLanguage) {
+		this.originalLanguage = originalLanguage;
 	}
 }

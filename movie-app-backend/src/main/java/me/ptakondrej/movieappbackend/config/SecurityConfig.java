@@ -31,7 +31,7 @@ public class SecurityConfig {
 		http.csrf(csrf -> csrf.disable())
 				.authorizeHttpRequests(authorize -> authorize
 						.requestMatchers("/api/auth/**").permitAll()
-						.requestMatchers("/api/trending-movies/top10").permitAll()
+						.requestMatchers("/api/trending-movies/**").permitAll()
 						.requestMatchers("/api/users").permitAll()
 						.requestMatchers("/api/saved-movies/all").permitAll()
 						.anyRequest().authenticated()

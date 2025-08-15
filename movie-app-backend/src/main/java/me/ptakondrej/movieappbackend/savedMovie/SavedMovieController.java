@@ -36,7 +36,7 @@ public class SavedMovieController {
 	}
 
 	@GetMapping("/{movieId}")
-	public ResponseEntity<SavedMovieDTO> getSavedMovieById(
+	public ResponseEntity<SavedMovieResponse> getSavedMovieById(
 			@RequestAttribute("userId") Long userId,
 			@PathVariable Long movieId
 	) {
@@ -44,9 +44,13 @@ public class SavedMovieController {
 		SavedMovie savedMovie = savedMovies.stream()
 				.filter(movie -> movie.getMovieId().equals(movieId))
 				.findFirst()
-				.orElseThrow(() -> new RuntimeException("Saved movie not found with ID: " + movieId));
+				.orElse(null);
+		if (savedMovie == null) {
+			return ResponseEntity.ok(new SavedMovieResponse(false, null, "Movie not found in saved movies."));
+		}
+
 		SavedMovieDTO savedMovieDTO = convertToDTO(savedMovie);
-		return ResponseEntity.ok(savedMovieDTO);
+		return ResponseEntity.ok(new SavedMovieResponse(true, savedMovieDTO, "Movie found."));
 	}
 
 	@PostMapping
@@ -77,27 +81,30 @@ public class SavedMovieController {
 	}
 
 	private SavedMovieDTO convertToDTO(SavedMovie savedMovie) {
+		if (savedMovie == null) {
+			return null;
+		}
 		return new SavedMovieDTO(
 				savedMovie.getMovieId(),
 				savedMovie.getTitle(),
-				savedMovie.getPosterUrl(),
-				savedMovie.getOverview(),
+				savedMovie.getPosterPath(),
 				savedMovie.getReleaseDate(),
-				savedMovie.getRating()
+				savedMovie.getVoteAverage(),
+				savedMovie.getOriginalLanguage()
 		);
 	}
 
 	private SavedMovie convertToEntity(SavedMovieDTO savedMovieDTO, Long userId) {
-		SavedMovie savedMovie = new SavedMovie();
-		savedMovie.setMovieId(savedMovieDTO.getMovieId());
-		savedMovie.setTitle(savedMovieDTO.getTitle());
-		savedMovie.setPosterUrl(savedMovieDTO.getPosterUrl());
-		savedMovie.setOverview(savedMovieDTO.getOverview());
-		savedMovie.setReleaseDate(savedMovieDTO.getReleaseDate());
-		savedMovie.setRating(savedMovieDTO.getRating());
-		savedMovie.setUserId(userId);
-		savedMovie.setCreatedAt(LocalDateTime.now());
-		savedMovie.setUpdatedAt(LocalDateTime.now());
-		return savedMovie;
+		return new SavedMovie(
+				savedMovieDTO.getMovieId(),
+				userId,
+				savedMovieDTO.getTitle(),
+				savedMovieDTO.getPosterPath(),
+				savedMovieDTO.getReleaseDate(),
+				savedMovieDTO.getVoteAverage(),
+				savedMovieDTO.getOriginalLanguage(),
+				LocalDateTime.now(),
+				LocalDateTime.now()
+		);
 	}
 }

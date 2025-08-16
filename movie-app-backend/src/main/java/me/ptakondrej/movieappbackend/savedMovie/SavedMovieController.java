@@ -19,11 +19,15 @@ public class SavedMovieController {
 
 	@GetMapping
 	public ResponseEntity<List<SavedMovieDTO>> getSavedMovies(@RequestAttribute("userId") Long userId) {
-		List<SavedMovie> savedMovies = savedMovieService.getSavedMoviesByUserId(userId);
-		List<SavedMovieDTO> savedMoviesDTO = savedMovies.stream()
-				.map(this::convertToDTO)
-				.toList();
-		return ResponseEntity.ok(savedMoviesDTO);
+		try {
+			List<SavedMovie> savedMovies = savedMovieService.getSavedMoviesByUserId(userId);
+			List<SavedMovieDTO> savedMoviesDTO = savedMovies.stream()
+					.map(this::convertToDTO)
+					.toList();
+			return ResponseEntity.ok(savedMoviesDTO);
+		} catch (RuntimeException e) {
+			return ResponseEntity.badRequest().body(List.of());
+		}
 	}
 
 	@GetMapping("/all")

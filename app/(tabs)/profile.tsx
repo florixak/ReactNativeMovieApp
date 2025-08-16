@@ -1,12 +1,14 @@
 import Button from "@/components/Button";
+import VerifyAccountModal from "@/components/VerifyAccountModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { MaterialIcons } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import AuthScreen from "../../components/AuthScreen";
 
 const Profile = () => {
-  const { user, logout, isLoading } = useAuth();
+  const { user, logout, isLoading, verify } = useAuth();
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   if (!user) {
     return <AuthScreen />;
@@ -65,7 +67,16 @@ const Profile = () => {
             <Text className="text-white text-sm">Edit</Text>
           </TouchableOpacity>
         </View>
-
+        {isModalVisible && (
+          <VerifyAccountModal
+            isVisible={isModalVisible}
+            onClose={() => setIsModalVisible(false)}
+            onVerify={async (code) => {
+              setIsModalVisible(false);
+              await verify({ email: user.email, verificationCode: code });
+            }}
+          />
+        )}
         {user.verified ? (
           <View className="mt-6 flex-col items-center justify-between gap-2">
             <Text className="text-light-100 text-sm">
@@ -73,9 +84,7 @@ const Profile = () => {
             </Text>
             <Button
               title="Verify Account"
-              onPress={() =>
-                Alert.alert("Verify Account", "Feature coming soon!")
-              }
+              onPress={() => setIsModalVisible((prev) => !prev)}
             />
           </View>
         ) : (

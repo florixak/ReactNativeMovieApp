@@ -10,4 +10,5 @@ public interface SavedMovieRepository extends JpaRepository<SavedMovie, Long> {
 	List<SavedMovie> findByUserId(Long userId);
 	List<SavedMovie> findByUserIdAndMovieId(Long userId, Long movieId);
 	void deleteByUserIdAndMovieId(Long userId, Long movieId);
+	List<SavedMovie> findByUserIdAndTitleContainingIgnoreCase(Long userId, String query);
 }

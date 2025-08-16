@@ -121,3 +121,9 @@ interface SavedMovieResponse {
   savedMovie?: SavedMovie;
   message: string;
 }
+
+interface SavedMovieListResponse {
+  success: boolean;
+  savedMovies?: SavedMovie[];
+  message: string;
+}

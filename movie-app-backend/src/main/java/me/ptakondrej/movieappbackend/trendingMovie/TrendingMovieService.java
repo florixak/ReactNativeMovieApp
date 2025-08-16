@@ -22,7 +22,7 @@ public class TrendingMovieService {
 	public void updateTrendingMovies(TrendingMovie trendingMovie) {
 
 		TrendingMovie existingMovie = trendingMovieRepository
-				.findByMovieIdAndSearchTerm(trendingMovie.getMovieId(), trendingMovie.getSearchTerm())
+				.findByMovieId(trendingMovie.getMovieId())
 				.orElse(null);
 
 		if (existingMovie == null) {

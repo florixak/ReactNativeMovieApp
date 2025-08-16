@@ -27,6 +27,23 @@ public class SavedMovieService {
 		return savedMovieRepository.findByUserId(userId);
 	}
 
+	public List<SavedMovie> getSavedMoviesByUserIdAndQuery(Long userId, String query) {
+		try {
+			if (userId == null || query == null || query.isBlank()) {
+				throw new RuntimeException("User ID and query must not be null or empty.");
+			}
+
+			List<SavedMovie> savedMovies = savedMovieRepository.findByUserIdAndTitleContainingIgnoreCase(userId, query);
+			if (savedMovies.isEmpty()) {
+				return List.of();
+			}
+
+			return savedMovies;
+		} catch (RuntimeException e) {
+			throw new RuntimeException("Error retrieving saved movies for user with ID " + userId + ": " + e.getMessage());
+		}
+	}
+
 	public void saveMovie(SavedMovie savedMovie) {
 		if (savedMovie.getMovieId() == null || savedMovie.getTitle() == null) {
 			throw new RuntimeException("Movie ID and title must not be null.");

@@ -1,6 +1,7 @@
 package me.ptakondrej.movieappbackend.savedMovie;
 
 import me.ptakondrej.movieappbackend.responses.SavedMovieResponse;
+import me.ptakondrej.movieappbackend.responses.SavedMoviesResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,15 +19,15 @@ public class SavedMovieController {
 	}
 
 	@GetMapping
-	public ResponseEntity<List<SavedMovieDTO>> getSavedMovies(@RequestAttribute("userId") Long userId) {
+	public ResponseEntity<SavedMoviesResponse> getSavedMovies(@RequestAttribute("userId") Long userId) {
 		try {
 			List<SavedMovie> savedMovies = savedMovieService.getSavedMoviesByUserId(userId);
 			List<SavedMovieDTO> savedMoviesDTO = savedMovies.stream()
 					.map(this::convertToDTO)
 					.toList();
-			return ResponseEntity.ok(savedMoviesDTO);
+			return ResponseEntity.ok(new SavedMoviesResponse(true, savedMoviesDTO, "Saved movies retrieved successfully."));
 		} catch (RuntimeException e) {
-			return ResponseEntity.badRequest().body(List.of());
+			return ResponseEntity.badRequest().body(new SavedMoviesResponse(false, null, e.getMessage()));
 		}
 	}
 
@@ -39,23 +40,33 @@ public class SavedMovieController {
 		return ResponseEntity.ok(savedMoviesDTO);
 	}
 
-	@GetMapping("/{movieId}")
-	public ResponseEntity<SavedMovieResponse> getSavedMovieById(
+	@GetMapping("/search")
+	public ResponseEntity<SavedMoviesResponse> getSavedMoviesByQuery(
 			@RequestAttribute("userId") Long userId,
-			@PathVariable Long movieId
+			@RequestParam String query
 	) {
-		List<SavedMovie> savedMovies = savedMovieService.getSavedMoviesByUserId(userId);
-		SavedMovie savedMovie = savedMovies.stream()
-				.filter(movie -> movie.getMovieId().equals(movieId))
-				.findFirst()
-				.orElse(null);
-		if (savedMovie == null) {
-			return ResponseEntity.ok(new SavedMovieResponse(false, null, "Movie not found in saved movies."));
+
+		if (query == null || query.isBlank()) {
+			return ResponseEntity.badRequest().body(new SavedMoviesResponse(false, null, "Query must not be null or empty."));
 		}
 
-		SavedMovieDTO savedMovieDTO = convertToDTO(savedMovie);
-		return ResponseEntity.ok(new SavedMovieResponse(true, savedMovieDTO, "Movie found."));
+		List<SavedMovie> savedMovies = savedMovieService.getSavedMoviesByUserIdAndQuery(userId, query);
+
+		if (savedMovies == null) {
+			return ResponseEntity.badRequest().body(new SavedMoviesResponse(false, null, "Error retrieving saved movies."));
+		}
+
+		if (savedMovies.isEmpty()) {
+			return ResponseEntity.ok(new SavedMoviesResponse(true, null, "No saved movies found for the given query."));
+		}
+
+		List<SavedMovieDTO> savedMoviesDTO = savedMovies.stream()
+				.map(this::convertToDTO)
+				.toList();
+
+		return ResponseEntity.ok(new SavedMoviesResponse(true, savedMoviesDTO, "Saved movies found for the given query."));
 	}
+
 
 	@PostMapping
 	public ResponseEntity<SavedMovieResponse> saveMovie(

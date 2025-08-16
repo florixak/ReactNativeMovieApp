@@ -22,5 +22,10 @@ Content-Type: application/json
 Authorization: Bearer token
 
 ###
+GET http://localhost:8080/api/saved-movies/search?query=star
+Content-Type: application/json
+Authorization: Bearer token
+
+###
 DELETE http://localhost:8080/api/saved-movies/27205
 Authorization: Bearer token

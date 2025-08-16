@@ -235,16 +235,20 @@ export const verifyUser = async (
 };
 
 export const fetchSavedMovies = async (
-  token: string | null
-): Promise<SavedMovie[]> => {
+  token: string | null,
+  query: string
+): Promise<SavedMovieListResponse> => {
+  const url = query
+    ? `${BACKEND_URL}/saved-movies/search?query=${query}`
+    : `${BACKEND_URL}/saved-movies`;
   try {
     if (!token) {
       throw new Error("No authentication token provided.");
     }
-    const response = await fetchWithAuth(`${BACKEND_URL}/saved-movies`, {
+    const response = await fetchWithAuth(url, {
       method: "GET",
     });
-    let data: SavedMovie[];
+    let data;
     try {
       data = await response.json();
     } catch {

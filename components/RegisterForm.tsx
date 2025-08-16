@@ -160,7 +160,7 @@ const RegisterForm = () => {
         )}
       </View>
 
-      <View className="mb-6">
+      <View className="mb-4">
         <TextInput
           placeholder="Password"
           secureTextEntry

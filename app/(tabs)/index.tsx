@@ -36,7 +36,7 @@ export default function Index() {
     error: moviesError,
     refetch: refetchMovies,
   } = useQuery({
-    queryKey: ["popularMovies"],
+    queryKey: ["latestMovies"],
     queryFn: () => fetchPopularMovies({ query: "" }),
   });
 

@@ -57,9 +57,9 @@ public class AuthService {
 					.orElseThrow(() -> new RuntimeException("User not found with username: " + input.getUsernameOrEmail()));
 		}
 
-		if (!user.isEnabled()) {
+		/*if (!user.isEnabled()) {
 			throw new RuntimeException("User account is not verified.");
-		}
+		}*/
 
 		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
 				input.getUsernameOrEmail(),

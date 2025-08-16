@@ -21,10 +21,12 @@ public class AuthController {
 
 	private final JwtService jwtService;
 	private final AuthService authService;
+	private final RefreshTokenService refreshTokenService;
 
-	public AuthController(JwtService jwtService, AuthService authService) {
+	public AuthController(JwtService jwtService, AuthService authService, RefreshTokenService refreshTokenService) {
 		this.jwtService = jwtService;
 		this.authService = authService;
+		this.refreshTokenService = refreshTokenService;
 	}
 
 	@PostMapping("/signup")
@@ -52,11 +54,7 @@ public class AuthController {
 	public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDTO loginUserDTO) {
 		try {
 			User authenticatedUser = authService.authenticate(loginUserDTO);
-			HashMap<String, Object> userDetails = new HashMap<>();
-			userDetails.put("userId", authenticatedUser.getId());
-			userDetails.put("username", authenticatedUser.getUsername());
-			userDetails.put("email", authenticatedUser.getEmail());
-			userDetails.put("enabled", authenticatedUser.isEnabled());
+			HashMap<String, Object> userDetails = createUserDetails(authenticatedUser);
 			String token = jwtService.generateToken(userDetails, authenticatedUser);
 			UserDTO userDTO = new UserDTO(
 					authenticatedUser.getId(),
@@ -64,10 +62,11 @@ public class AuthController {
 					authenticatedUser.getEmail(),
 					authenticatedUser.isEnabled()
 			);
-			LoginResponse loginResponse = new LoginResponse(true, userDTO, token, jwtService.getExpirationTime(), "Login successful");
+			RefreshToken refreshToken = refreshTokenService.createRefreshToken(authenticatedUser);
+			LoginResponse loginResponse = new LoginResponse(true, userDTO, token, jwtService.getExpirationTime(), refreshToken.getToken(), "Login successful");
 			return ResponseEntity.ok(loginResponse);
 		} catch (RuntimeException e) {
-			return ResponseEntity.badRequest().body(new LoginResponse(false,null, null, -1, e.getMessage()));
+			return ResponseEntity.badRequest().body(new LoginResponse(false,null, null, -1, null, e.getMessage()));
 		}
 	}
 
@@ -89,5 +88,41 @@ public class AuthController {
 		} catch (RuntimeException e) {
 			return ResponseEntity.badRequest().body(new Response(false, e.getMessage()));
 		}
+	}
+
+	@PostMapping("/refresh")
+	public ResponseEntity<LoginResponse> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+		try {
+			RefreshToken refreshToken = refreshTokenService
+					.findByToken(refreshTokenRequest.getRefreshToken())
+					.map(refreshTokenService::verifyExpiration)
+					.orElseThrow(() -> new RuntimeException("Invalid refresh token."));
+
+			User user = refreshToken.getUser();
+			HashMap<String, Object> userDetails = createUserDetails(user);
+			String newAccessToken = jwtService.generateToken(userDetails, user);
+			UserDTO userDTO = new UserDTO(user.getId(), user.getUsername(), user.getEmail(), user.isEnabled());
+			return ResponseEntity.ok(
+					new LoginResponse(
+							true,
+							userDTO,
+							newAccessToken,
+							jwtService.getExpirationTime(),
+							refreshToken.getToken(),
+							"Token refreshed"
+					)
+			);
+		} catch (RuntimeException e) {
+			return ResponseEntity.badRequest().body(new LoginResponse(false, null, null, -1, null, e.getMessage()));
+		}
+	}
+
+	private HashMap<String, Object> createUserDetails(User user) {
+		HashMap<String, Object> userDetails = new HashMap<>();
+		userDetails.put("userId", user.getId());
+		userDetails.put("username", user.getUsername());
+		userDetails.put("email", user.getEmail());
+		userDetails.put("enabled", user.isEnabled());
+		return userDetails;
 	}
 }

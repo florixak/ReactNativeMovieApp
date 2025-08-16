@@ -1,8 +1,10 @@
+import { REFRESH_TOKEN_KEY, TOKEN_KEY } from "@/constants/storage";
 import {
   LoginData,
   RegisterData,
   VerificationData,
 } from "@/schemas/authSchemas";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const TMDB_CONFIG = {
   BASE_URL: "https://api.themoviedb.org/3",
@@ -184,6 +186,30 @@ export const registerUser = async (
   }
 };
 
+export const refreshUserToken = async (
+  refreshToken: string
+): Promise<LoginResponse> => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/auth/refresh`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to refresh token.");
+    }
+
+    const data: LoginResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error refreshing token:", error);
+    throw error;
+  }
+};
+
 export const verifyUser = async (
   verificationData: VerificationData
 ): Promise<VerificationCodeResponse> => {
@@ -215,12 +241,8 @@ export const fetchSavedMovies = async (
     if (!token) {
       throw new Error("No authentication token provided.");
     }
-    const response = await fetch(`${BACKEND_URL}/saved-movies`, {
+    const response = await fetchWithAuth(`${BACKEND_URL}/saved-movies`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
     });
     let data: SavedMovie[];
     try {
@@ -323,6 +345,44 @@ export const fetchSavedMovieById = async (
     return data;
   } catch (error) {
     console.error("Error fetching saved movie:", error);
+    throw error;
+  }
+};
+
+export const fetchWithAuth = async (
+  input: RequestInfo,
+  init: RequestInit,
+  tryRefresh: boolean = true
+): Promise<Response> => {
+  try {
+    const token = await AsyncStorage.getItem(TOKEN_KEY);
+    const refreshToken = await AsyncStorage.getItem(REFRESH_TOKEN_KEY);
+
+    const headers = {
+      ...(init.headers || {}),
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+
+    let response = await fetch(input, { ...init, headers });
+    if (response.status === 401 && tryRefresh && refreshToken) {
+      const refreshResult = await refreshUserToken(refreshToken);
+
+      if (refreshResult.success && refreshResult.token) {
+        await AsyncStorage.setItem(TOKEN_KEY, refreshResult.token);
+        const retryHeaders = {
+          ...headers,
+          Authorization: `Bearer ${refreshResult.token}`,
+        };
+        response = await fetch(input, { ...init, headers: retryHeaders });
+      } else {
+        throw new Error("Token refresh failed.");
+      }
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Error fetching with auth:", error);
     throw error;
   }
 };

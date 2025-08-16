@@ -90,6 +90,7 @@ interface User {
   id: string;
   email: string;
   username: string;
+  verified: boolean;
 }
 
 interface VerificationCodeResponse {
@@ -101,6 +102,7 @@ interface LoginResponse {
   success: boolean;
   user?: User;
   token?: string;
+  refreshToken?: string;
   expiresIn?: number;
   message: string;
 }

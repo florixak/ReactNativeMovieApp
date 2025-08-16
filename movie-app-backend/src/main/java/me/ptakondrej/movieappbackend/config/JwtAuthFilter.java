@@ -54,7 +54,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 			System.out.println("JWT: " + jwt);
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 			if (username != null && authentication == null) { // if user is not authenticated and userEmail is not null
-				System.out.println("not authenticated, loading user details for email: " + username);
 				UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
 				if (jwtService.isTokenValid(jwt, userDetails)) {
@@ -69,15 +68,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 					authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 					SecurityContextHolder.getContext().setAuthentication(authToken);
 				} else {
-					System.out.println("JWT is invalid or expired for user: " + username);
+					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+					response.getWriter().write("Unauthorized: Invalid or expired token.");
+					return;
 				}
 			}
 
 			filterChain.doFilter(request, response);
 
 		} catch (Exception e) {
-			System.out.println("Exception in JwtAuthFilter: " + e.getMessage());
-			handlerExceptionResolver.resolveException(request, response, null, e);
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			response.getWriter().write("Unauthorized: " + e.getMessage());
 		}
+		/*catch (Throwable t) {
+			handlerExceptionResolver.resolveException(request, response, null, t);
+		}*/
 	}
 }

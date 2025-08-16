@@ -1,9 +1,15 @@
+import { REFRESH_TOKEN_KEY, TOKEN_KEY, USER_KEY } from "@/constants/storage";
 import {
   LoginData,
   RegisterData,
   VerificationData,
 } from "@/schemas/authSchemas";
-import { loginUser, registerUser, verifyUser } from "@/services/api";
+import {
+  loginUser,
+  refreshUserToken,
+  registerUser,
+  verifyUser,
+} from "@/services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createContext,
@@ -27,13 +33,10 @@ export interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = "auth_token";
-const USER_KEY = "auth_user";
-const EXPIRES_IN_KEY = "auth_expires_in";
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const isAuthenticated = !!user && !!token;
@@ -45,13 +48,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const loadStoredAuth = async () => {
     try {
       setIsLoading(true);
-      const [storedToken, storedUser] = await Promise.all([
+      const [storedToken, storedUser, storedRefreshToken] = await Promise.all([
         AsyncStorage.getItem(TOKEN_KEY),
         AsyncStorage.getItem(USER_KEY),
+        AsyncStorage.getItem(REFRESH_TOKEN_KEY),
       ]);
-      if (storedToken && storedUser) {
+      if (storedToken && storedUser && storedRefreshToken) {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
+        setRefreshToken(storedRefreshToken);
       }
     } catch (e) {
       console.error("Failed to load stored authentication:", e);
@@ -61,14 +66,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const storeAuth = async (userData: User, token: string) => {
+  const storeAuth = async (
+    userData: User,
+    token: string,
+    refreshToken: string
+  ) => {
     try {
       await Promise.all([
         AsyncStorage.setItem(TOKEN_KEY, token),
         AsyncStorage.setItem(USER_KEY, JSON.stringify(userData)),
+        AsyncStorage.setItem(REFRESH_TOKEN_KEY, refreshToken),
       ]);
       setUser(userData);
       setToken(token);
+      setRefreshToken(refreshToken);
     } catch (e) {
       console.error("Failed to store auth:", e);
       throw new Error("Failed to store authentication");
@@ -80,9 +91,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await Promise.all([
         AsyncStorage.removeItem(TOKEN_KEY),
         AsyncStorage.removeItem(USER_KEY),
+        AsyncStorage.removeItem(REFRESH_TOKEN_KEY),
       ]);
       setUser(null);
       setToken(null);
+      setRefreshToken(null);
     } catch (e) {
       console.error("Failed to clear stored auth:", e);
     }
@@ -97,8 +110,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(data.message || "Login failed");
       }
 
-      if (data && data.user && data.token) {
-        await storeAuth(data.user, data.token);
+      if (data && data.user && data.token && data.refreshToken) {
+        await storeAuth(data.user, data.token, data.refreshToken);
       }
     } catch (error: any) {
       throw new Error(error.message || "Login failed");
@@ -154,7 +167,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const refresh = async () => {};
+  const refresh = async () => {
+    try {
+      setIsLoading(true);
+      if (!refreshToken) throw new Error("No refresh token available");
+      const data = await refreshUserToken(refreshToken);
+
+      if (!data.success || !data.token || !data.refreshToken) {
+        throw new Error(data.message || "Token refresh failed");
+      }
+
+      if (!user) {
+        throw new Error("No user available for token refresh");
+      }
+
+      await storeAuth(user, data.token, data.refreshToken || refreshToken);
+    } catch (error: any) {
+      throw new Error(error.message || "Token refresh failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const value = {
     user,

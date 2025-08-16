@@ -1,6 +1,7 @@
 package me.ptakondrej.movieappbackend.trendingMovie;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class TrendingMovieService {
 		return trendingMovieRepository.findAll();
 	}
 
+	@Transactional
 	public void updateTrendingMovies(TrendingMovie trendingMovie) {
 
 		TrendingMovie existingMovie = trendingMovieRepository
@@ -43,17 +45,4 @@ public class TrendingMovieService {
 		List<TrendingMovie> trendingMovies = trendingMovieRepository.findTop10ByOrderByCountDesc();
 		return trendingMovies;
 	}
-
-	private TrendingMovieDTO convertToDTO(TrendingMovie entity) {
-		return new TrendingMovieDTO(
-				entity.getId(),
-				entity.getSearchTerm(),
-				entity.getMovieId(),
-				entity.getTitle(),
-				entity.getCount(),
-				entity.getPosterUrl()
-		);
-	}
-
-
 }

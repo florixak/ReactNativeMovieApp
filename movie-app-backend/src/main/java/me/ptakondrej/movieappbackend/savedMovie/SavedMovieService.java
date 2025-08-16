@@ -1,6 +1,7 @@
 package me.ptakondrej.movieappbackend.savedMovie;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -39,6 +40,7 @@ public class SavedMovieService {
 		savedMovieRepository.save(savedMovie);
 	}
 
+	@Transactional
 	public void deleteSavedMovie(
 			Long userId,
 			Long movieId

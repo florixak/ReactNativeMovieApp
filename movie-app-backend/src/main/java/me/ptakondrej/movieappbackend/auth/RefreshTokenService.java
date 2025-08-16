@@ -2,6 +2,7 @@ package me.ptakondrej.movieappbackend.auth;
 
 import me.ptakondrej.movieappbackend.user.User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;

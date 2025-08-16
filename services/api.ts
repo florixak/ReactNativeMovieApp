@@ -269,12 +269,8 @@ export const saveMovie = async (
       throw new Error("No authentication token provided.");
     }
 
-    const response = await fetch(`${BACKEND_URL}/saved-movies`, {
+    const response = await fetchWithAuth(`${BACKEND_URL}/saved-movies`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
       body: JSON.stringify({
         id: movie.id,
         title: movie.title,
@@ -303,12 +299,8 @@ export const unsaveMovie = async (
       throw new Error("No authentication token provided.");
     }
 
-    const response = await fetch(`${BACKEND_URL}/saved-movies/${id}`, {
+    const response = await fetchWithAuth(`${BACKEND_URL}/saved-movies/${id}`, {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
     });
 
     if (!response.ok) {
@@ -329,12 +321,8 @@ export const fetchSavedMovieById = async (
       throw new Error("No authentication token provided.");
     }
 
-    const response = await fetch(`${BACKEND_URL}/saved-movies/${id}`, {
+    const response = await fetchWithAuth(`${BACKEND_URL}/saved-movies/${id}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
     });
 
     if (!response.ok) {

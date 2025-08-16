@@ -57,7 +57,8 @@ const MovieDetails = () => {
     queryFn: () => fetchSavedMovieById(id as string, token),
     enabled: !!token && !!id,
   });
-  const isMovieSaved = savedMovie?.savedMovie !== null;
+
+  const isMovieSaved = savedMovie?.savedMovie !== null || false;
 
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
@@ -92,6 +93,10 @@ const MovieDetails = () => {
   });
 
   const handleSaveMovie = () => {
+    if (!user) {
+      router.push("/profile");
+      return;
+    }
     mutate();
   };
 

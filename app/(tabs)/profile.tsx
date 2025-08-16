@@ -1,3 +1,4 @@
+import Button from "@/components/Button";
 import { useAuth } from "@/contexts/AuthContext";
 import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
@@ -46,9 +47,15 @@ const Profile = () => {
               {user.username}
             </Text>
             <Text className="text-gray-400 text-sm">{user.email}</Text>
-            <View className="flex-row items-center mt-2">
-              <View className="w-2 h-2 bg-green-500 rounded-full mr-2" />
-              <Text className="text-green-500 text-xs">Active</Text>
+            <View className="flex-row items-center mt-1 gap-1">
+              <Text className="text-gray-400 text-sm">Verified</Text>
+              <View>
+                {user.verified ? (
+                  <MaterialIcons name="check-circle" size={16} color="green" />
+                ) : (
+                  <MaterialIcons name="cancel" size={16} color="red" />
+                )}
+              </View>
             </View>
           </View>
           <TouchableOpacity
@@ -58,6 +65,29 @@ const Profile = () => {
             <Text className="text-white text-sm">Edit</Text>
           </TouchableOpacity>
         </View>
+
+        {user.verified ? (
+          <View className="mt-6 flex-col items-center justify-between gap-2">
+            <Text className="text-light-100 text-sm">
+              You need to verify your account to access all features.
+            </Text>
+            <Button
+              title="Verify Account"
+              onPress={() =>
+                Alert.alert("Verify Account", "Feature coming soon!")
+              }
+            />
+          </View>
+        ) : (
+          <View className="mt-6">
+            <Button
+              title="Change Password"
+              onPress={() =>
+                Alert.alert("Change Password", "Feature coming soon!")
+              }
+            />
+          </View>
+        )}
         <View className="mt-6">
           <TouchableOpacity
             onPress={handleLogout}

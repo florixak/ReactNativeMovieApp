@@ -1,4 +1,5 @@
 import MovieCard from "@/components/MovieCard";
+import NotLoggedIn from "@/components/NotLoggedIn";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchSavedMovies } from "@/services/api";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -13,7 +14,7 @@ import {
 } from "react-native";
 
 const Saved = () => {
-  const { token } = useAuth();
+  const { user, token } = useAuth();
 
   const {
     data: savedMovies,
@@ -24,7 +25,12 @@ const Saved = () => {
     queryKey: ["savedMovies"],
     queryFn: async () => await fetchSavedMovies(token),
     refetchOnWindowFocus: false,
+    enabled: !!user && !!token,
   });
+
+  if (!user) {
+    return <NotLoggedIn />;
+  }
 
   if (isLoading) {
     return (
